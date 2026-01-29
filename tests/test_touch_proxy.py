@@ -19,17 +19,6 @@ class TestTouchProxy(unittest.TestCase):
                                             input_event=None)
         touch_proxy.touch((100, 100))
 
-        touch_proxy = TouchProxy.auto_setup(self.dev.adb,
-                                            default_method="MINITOUCH",
-                                            ori_transformer=self.dev._touch_point_by_orientation,
-                                            size_info=self.dev.display_info,
-                                            input_event=self.dev.input_event)
-        touch_proxy.touch((100, 100))
-
     def test_touch_method(self):
-        self.assertIn(self.dev.touch_method, TouchProxy.TOUCH_METHODS.keys())
-
-    def test_get_deprecated_var(self):
-        for name in ["minitouch", "maxtouch"]:
-            obj = getattr(self.dev, name)
-            self.assertIsInstance(obj, TouchProxy)
+        # 只支持 ADBTOUCH
+        self.assertEqual(self.dev.touch_method, "ADBTOUCH")

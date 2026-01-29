@@ -19,11 +19,7 @@ from airtest.core.android.touch_methods.touch_proxy import TouchProxy
 from airtest.core.error import AdbError, AdbShellError
 from airtest.core.android.cap_methods.screen_proxy import ScreenProxy
 
-# Compatible with old code
-from airtest.core.android.cap_methods.minicap import Minicap  # noqa
-from airtest.core.android.cap_methods.javacap import Javacap  # noqa
-from airtest.core.android.touch_methods.minitouch import Minitouch  # noqa
-from airtest.core.android.touch_methods.maxtouch import Maxtouch  # noqa
+# Compatible with old code - 已移除 minitouch/maxtouch 引用
 
 from airtest.core.settings import Settings as ST
 from airtest.aircv.screen_recorder import ScreenRecorder, resize_by_max, get_max_size
@@ -37,8 +33,8 @@ class Android(Device):
     """Android Device Class"""
 
     def __init__(self, serialno=None, host=None,
-                 cap_method=CAP_METHOD.MINICAP,
-                 touch_method=TOUCH_METHOD.MINITOUCH,
+                 cap_method=CAP_METHOD.ADBCAP,
+                 touch_method=TOUCH_METHOD.ADBTOUCH,
                  ime_method=IME_METHOD.YOSEMITEIME,
                  ori_method=ORI_METHOD.MINICAP,
                  display_id=None,
@@ -88,8 +84,7 @@ class Android(Device):
 
         Examples:
             >>> dev = Android()
-            >>> dev.touch_proxy.touch((100, 100))  # If the device uses minitouch, it is the same as dev.minitouch.touch
-            >>> dev.touch_proxy.swipe_along([(0,0), (100, 100)])
+            >>> dev.touch_proxy.touch((100, 100))
         """
         if self._touch_proxy:
             return self._touch_proxy
@@ -103,12 +98,12 @@ class Android(Device):
     @touch_proxy.setter
     def touch_proxy(self, touch_method):
         """
-        Specify a touch method, if the method fails to initialize, try to use other methods instead
+        Specify touch method
 
-        指定一个触摸方案，如果该方法初始化失败，则尝试使用其他方法代替
+        指定触摸方法
 
         Args:
-            touch_method: "MINITOUCH" or Minitouch() object
+            touch_method: 保留参数兼容性
 
         Returns:
             TouchProxy object
@@ -118,11 +113,7 @@ class Android(Device):
 
         Examples:
             >>> dev = Android()
-            >>> dev.touch_proxy = "MINITOUCH"
-
-            >>> from airtest.core.android.touch_methods.minitouch import Minitouch
-            >>> minitouch = Minitouch(dev.adb)
-            >>> dev.touch_proxy = minitouch
+            >>> dev.touch_proxy.touch((100, 100))
 
         """
         if self._screen_proxy:
@@ -160,7 +151,7 @@ class Android(Device):
         仅为了兼容一些旧的代码
 
         Args:
-            name: "MINITOUCH" or Minitouch() object
+            name: 保留参数兼容性
 
         Returns:
             None
@@ -216,19 +207,19 @@ class Android(Device):
     @property
     def screen_proxy(self):
         """
-        Similar to touch_proxy, it returns a proxy that can automatically initialize an available screenshot method, such as Minicap
+        Similar to touch_proxy, it returns a proxy that can automatically initialize screenshot method
 
         Afterwards, you only need to call ``self.screen_proxy.get_frame()`` to get the screenshot
 
-        类似touch_proxy，返回一个代理，能够自动初始化一个可用的屏幕截图方法，例如Minicap
+        类似touch_proxy，返回一个代理，能够自动初始化截图方法
 
         后续只需要调用 ``self.screen_proxy.get_frame()``即可获取到屏幕截图
 
-        Returns: ScreenProxy(Minicap())
+        Returns: ScreenProxy object
 
         Examples:
             >>> dev = Android()
-            >>> img = dev.screen_proxy.get_frame_from_stream()  # dev.minicap.get_frame_from_stream() is deprecated
+            >>> img = dev.screen_proxy.get_frame()  # get screenshot
 
         """
         if self._screen_proxy:
@@ -242,26 +233,19 @@ class Android(Device):
     @screen_proxy.setter
     def screen_proxy(self, cap_method):
         """
-        Specify a screenshot method, if the method fails to initialize, try to use other methods instead
+        Specify a screenshot method
 
-        指定一个截图方法，如果该方法初始化失败，则尝试使用其他方法代替
+        指定截图方法
 
         Args:
-            cap_method: "MINICAP" or :py:mod:`airtest.core.android.cap_methods.minicap.Minicap` object
+            cap_method: 保留参数兼容性
 
         Returns:
             ScreenProxy object
 
-        Raises:
-            ScreenError when the connection fails
-
         Examples:
             >>> dev = Android()
-            >>> dev.screen_proxy = "MINICAP"
-
-            >>> from airtest.core.android.cap_methods.minicap import Minicap
-            >>> minicap = Minicap(dev.adb, rotation_watcher=dev.rotation_watcher)
-            >>> dev.screen_proxy = minicap
+            >>> dev.screen_proxy = dev.screen_proxy  # no need to specify
 
         """
         if self._screen_proxy:
@@ -636,7 +620,7 @@ class Android(Device):
 
     def pinch(self, center=None, percent=0.5, duration=0.5, steps=5, in_or_out='in'):
         """
-        Perform pinch event on the device, only for minitouch and maxtouch
+        Perform pinch event on the device using ADB touch method
 
         Args:
             center: the center point of the pinch operation
@@ -656,7 +640,7 @@ class Android(Device):
 
     def swipe_along(self, coordinates_list, duration=0.8, steps=5):
         """
-        Perform swipe event across multiple points in sequence, only for minitouch and maxtouch
+        Perform swipe event across multiple points in sequence using ADB touch method
 
         Args:
             coordinates_list: list of coordinates: [(x1, y1), (x2, y2), (x3, y3)]
@@ -672,7 +656,7 @@ class Android(Device):
 
     def two_finger_swipe(self, tuple_from_xy, tuple_to_xy, duration=0.8, steps=5, offset=(0, 50)):
         """
-        Perform two finger swipe action, only for minitouch and maxtouch
+        Perform two finger swipe action using ADB touch method
 
         Args:
             tuple_from_xy: start point
@@ -1005,18 +989,14 @@ class Android(Device):
 
     def get_clipboard(self):
         """
-        Get the clipboard content
+        Perform touch operation using ADB touch method
 
         Returns:
-            clipboard content
+            TouchProxy
 
         Examples:
             >>> dev = Android()
-            >>> dev.set_clipboard("hello world")
-            >>> dev.get_clipboard()
-            'hello world'
-            >>> dev.paste()  # paste the clipboard content
-
+            >>> dev.touch_proxy.touch((100, 100))
         """
         return self.yosemite_ext.get_clipboard()
 
@@ -1071,7 +1051,7 @@ class Android(Device):
 
     def _register_rotation_watcher(self):
         """
-        Register callbacks for Android and minicap when rotation of screen has changed
+        Register callbacks for Android when rotation of screen has changed
 
         callback is called in another thread, so be careful about thread-safety
 
@@ -1121,8 +1101,8 @@ class Android(Device):
         """
         Disconnect the device
 
-        1. stop minicap/javacap
-        2. stop minitouch/maxtouch
+        1. stop screen proxy
+        2. stop touch proxy
         3. stop rotation_watcher
 
         Returns:
@@ -1134,8 +1114,4 @@ class Android(Device):
         self.rotation_watcher.teardown()
 
 
-# Compatible with old code, such as device.minicap
-Android.minicap=property(lambda self: self.get_deprecated_var("minicap", "screen_proxy"))
-Android.javacap=property(lambda self: self.get_deprecated_var("javacap", "screen_proxy"))
-Android.minitouch=property(lambda self: self.get_deprecated_var("minitouch", "touch_proxy"))
-Android.maxtouch=property(lambda self: self.get_deprecated_var("maxtouch", "touch_proxy"))
+# 兼容性代码已移除 - 不再支持 minitouch/maxtouch

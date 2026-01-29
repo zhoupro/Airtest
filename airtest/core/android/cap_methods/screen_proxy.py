@@ -65,53 +65,35 @@ class ScreenProxy(object):
     @classmethod
     def auto_setup(cls, adb, default_method=None, *args, **kwargs):
         """
-        In order of priority, try to initialize all registered screenshot methods,
-        select an available method to return
+        Initialize ADB screenshot method
 
-        按优先顺序，尝试初始化注册过的所有屏幕截图方法，选择一个可用方法返回
-
-        Custom method 自定义方法 > MINICAP > JAVACAP > ADBCAP
+        初始化 ADB 截图方法
 
         Args:
             adb: :py:mod:`airtest.core.android.adb.ADB`
-            default_method: String such as "MINICAP", or :py:mod:`airtest.core.android.cap_methods.minicap.Minicap` object
+            default_method: 保留参数兼容性
 
         Returns: ScreenProxy object
 
         Examples:
             >>> dev = Android()
-            >>> screen_proxy = ScreenProxy.auto_setup(dev.adb, rotation_watcher=dev.rotation_watcher)
-            >>> screen_proxy.get_frame_from_stream()
-            >>> screen_proxy.teardown_stream()
+            >>> screen_proxy = ScreenProxy.auto_setup(dev.adb)
+            >>> screen_proxy.get_frame()
 
         """
-        screen = None
-        if default_method:
-            if isinstance(default_method, str) and default_method.upper() in cls.SCREEN_METHODS:
-                screen = cls.SCREEN_METHODS[default_method.upper()](adb, *args, **kwargs)
-            elif isinstance(default_method, BaseCap):
-                screen = default_method
-            if screen and cls.check_frame(screen):
-                return ScreenProxy(screen)
-        # 从self.SCREEN_METHODS中，逆序取出可用的方法
-        for name, screen_class in reversed(cls.SCREEN_METHODS.items()):
-            if name == default_method:
-                continue
-            screen = screen_class(adb, *args, **kwargs)
-            if cls.check_frame(screen):
-                return ScreenProxy(screen)
-        # 如果没有找到任何可用方法，抛出异常（但是至少adbcap是可用的）
-        raise ScreenError("No available screen capture method found")
+        # 直接使用 ADBCAP，不再尝试其他方法
+        from airtest.core.android.cap_methods.adbcap import AdbCap
+        screen = AdbCap(adb, *args, **kwargs)
+        if cls.check_frame(screen):
+            return ScreenProxy(screen)
+        # 如果 ADBCAP 不可用，抛出异常
+        raise ScreenError("ADB screenshot method is not available")
 
 
 def register_screen():
-    # 按优先级逆序注册默认的屏幕截图方法
-    from airtest.core.android.cap_methods.minicap import Minicap
-    from airtest.core.android.cap_methods.javacap import Javacap
+    # 只注册 ADBCAP 作为截图方法
     from airtest.core.android.cap_methods.adbcap import AdbCap
     ScreenProxy.SCREEN_METHODS["ADBCAP"] = AdbCap
-    ScreenProxy.SCREEN_METHODS["JAVACAP"] = Javacap
-    ScreenProxy.SCREEN_METHODS["MINICAP"] = Minicap
 
 
 register_screen()

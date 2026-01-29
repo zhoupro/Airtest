@@ -25,8 +25,6 @@ ROTATIONWATCHER_PACKAGE = "jp.co.cyberagent.stf.rotationwatcher"
 YOSEMITE_APK = os.path.join(STATICPATH, "apks", "Yosemite.apk")
 YOSEMITE_PACKAGE = 'com.netease.nie.yosemite'
 YOSEMITE_IME_SERVICE = 'com.netease.nie.yosemite/.ime.ImeService'
-MAXTOUCH_JAR = os.path.join(STATICPATH, "apks", "maxpresent.jar")
-ROTATIONWATCHER_JAR = os.path.join(STATICPATH, "apks", "rotationwatcher.jar")
 IP_PATTERN = re.compile(r'(\d+\.){3}\d+')
 
 
